@@ -21,6 +21,7 @@
     <module>data-sync-full</module>
     <module>data-sync-inc</module>
     <module>data-sync-common</module>
+    <module>data-sync-debezium</module>
   </modules>
 
   <properties>
@@ -51,7 +52,11 @@
         <artifactId>data-sync-inc</artifactId>
         <version>${project.version}</version>
       </dependency>
-
+      <dependency>
+        <groupId>org.example</groupId>
+        <artifactId>data-sync-debezium</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
