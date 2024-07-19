@@ -18,6 +18,11 @@
     </properties>
 
     <dependencies>
+        <!-- 引入一些日志等公共组件，避免单独引入造成版本错乱-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
