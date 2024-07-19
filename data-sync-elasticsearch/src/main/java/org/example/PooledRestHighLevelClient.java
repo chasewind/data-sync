@@ -15,15 +15,15 @@ public class PooledRestHighLevelClient {
             httpHosts[i] = HttpHost.create(hosts[i]);
         }
 
-//        RestClientBuilder restClientBuilder =
-//                RestClient.builder(httpHosts).setHttpClientConfigCallback(httpAsyncClientBuilder -> {
-//                    httpAsyncClientBuilder.disableAuthCaching()
-//                            .setMaxConnTotal(20)
-//                            .setMaxConnPerRoute(10);
-//                    return httpAsyncClientBuilder;
-//                }
-//        );
-        RestClientBuilder restClientBuilder =RestClient.builder(httpHosts);
+        RestClientBuilder restClientBuilder =
+                RestClient.builder(httpHosts).setHttpClientConfigCallback(httpAsyncClientBuilder -> {
+                    httpAsyncClientBuilder.disableAuthCaching()
+                            .setMaxConnTotal(20)
+                            .setMaxConnPerRoute(10);
+                    return httpAsyncClientBuilder;
+                }
+        );
+//        RestClientBuilder restClientBuilder =RestClient.builder(httpHosts);
         restHighLevelClient = new RestHighLevelClient(restClientBuilder);
     }
 
