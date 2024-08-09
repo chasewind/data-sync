@@ -19,7 +19,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 @Slf4j
-public class LoaderTask implements Callable<String> {
+public class LoaderTask implements Callable<List<Map<String, Object>>> {
     private CountDownLatch latch;
     private ReaderSegment parentSegment;
     private DbStarter dbStarter;
@@ -43,59 +43,70 @@ public class LoaderTask implements Callable<String> {
     }
 
     @Override
-    public String call() throws Exception {
-
-        SchemaSyncTable schemaSyncTable = parentSegment.getSchemaSyncTable();
-        BaseDb bizDb = MySqlReader.getBaseDb(dbStarter, schemaSyncTable);
-        if (bizDb != null) {
+    public List<Map<String, Object>> call() throws Exception {
+        try {
+            SchemaSyncTable schemaSyncTable = parentSegment.getSchemaSyncTable();
+            BaseDb bizDb = MySqlReader.getBaseDb(dbStarter, schemaSyncTable);
+            if (bizDb == null) {
+                latch.countDown();
+                return new ArrayList<>();
+            }
             //加载当前分段数据
             List<Map<String, Object>> parentTableData = MySqlReader.readAndConvert(bizDb, parentSegment);
 
             log.info("table:{},size:{}", parentSegment.getRealTableName(), parentTableData.size());
+            if(CollectionUtils.isEmpty(parentTableData)){
+                return new ArrayList<>();
+            }
             //加载子节点对应数据
             //目前只接受一层子节点
             List<SchemaSyncTable> children = schemaSyncTable.getChildren();
-            if (CollectionUtils.isNotEmpty(children)) {
-                //子节点数据遍历涉及到分库分表需要多表查询，涉及到单表是相对比较简单的
-                //拿出父子表对应的字段和值
-                //比如订单主表是id，子表为记为p_id,子表查询拼接sql 就是where p_id in (id1,id2,id3)
-                //如果是多个对应关系的话，主表 c1,c2，子表是 cx1和cx2，sql拼接就是 where cx1 in (....) and cx2 in (....)
-                //这里确保外层循环次数最少，所以先用表关系做外循环
-                for (SchemaSyncTable child : children) {
-                    List<Pair<String, String>> columnRelation = child.getColumnRelation();
-                    List<WhereClause> whereClauseList = new ArrayList<>();
-                    List<String> childRouteKeys = new ArrayList<>();
-                    List<String> parentRouteKeys = new ArrayList<>();
-                    for (Pair<String, String> pair : columnRelation) {
-                        String parentKey = pair.getKey();
-                        String childKey = pair.getValue();
-                        parentRouteKeys.add(parentKey);
-                        childRouteKeys.add(childKey);
-                        //拼接条件
-                        WhereClause whereClause = new WhereClause();
-                        whereClause.setColumnName(childKey);
-                        whereClause.setColumnValue(new ArrayList<>());
-                        for (Map<String, Object> parentRow : parentTableData) {
-                            Object parentValue = parentRow.get(parentKey);
-                            whereClause.getColumnValue().add(String.valueOf(parentValue));
-                        }
-                        whereClauseList.add(whereClause);
-                    }
+            loadChildrenData(children, parentTableData);
+            latch.countDown();
+            return parentTableData;
 
-                    List<Map<String, Object>> childTableData = queryChildTableData(dbStarter, child, whereClauseList);
-                    //组织为两层结构的数据
-                    buildDataStructure(child, parentTableData, parentRouteKeys, childTableData, childRouteKeys);
+        } catch (Exception e) {
+            log.error("load fail ", e);
+            throw new RuntimeException(e);
+        }
+    }
 
-
+    private void loadChildrenData(List<SchemaSyncTable> children, List<Map<String, Object>> parentTableData) throws SQLException {
+        if (CollectionUtils.isEmpty(children)) {
+            return;
+        }
+        //子节点数据遍历涉及到分库分表需要多表查询，涉及到单表是相对比较简单的
+        //拿出父子表对应的字段和值
+        //比如订单主表是id，子表为记为p_id,子表查询拼接sql 就是where p_id in (id1,id2,id3)
+        //如果是多个对应关系的话，主表 c1,c2，子表是 cx1和cx2，sql拼接就是 where cx1 in (....) and cx2 in (....)
+        //这里确保外层循环次数最少，所以先用表关系做外循环
+        for (SchemaSyncTable child : children) {
+            List<Pair<String, String>> columnRelation = child.getColumnRelation();
+            List<WhereClause> whereClauseList = new ArrayList<>();
+            List<String> childRouteKeys = new ArrayList<>();
+            List<String> parentRouteKeys = new ArrayList<>();
+            for (Pair<String, String> pair : columnRelation) {
+                String parentKey = pair.getKey();
+                String childKey = pair.getValue();
+                parentRouteKeys.add(parentKey);
+                childRouteKeys.add(childKey);
+                //拼接条件
+                WhereClause whereClause = new WhereClause();
+                whereClause.setColumnName(childKey);
+                whereClause.setColumnValue(new ArrayList<>());
+                for (Map<String, Object> parentRow : parentTableData) {
+                    Object parentValue = parentRow.get(parentKey);
+                    whereClause.getColumnValue().add(String.valueOf(parentValue));
                 }
+                whereClauseList.add(whereClause);
             }
 
-        } else {
-            log.error("can not find the datasource");
+            List<Map<String, Object>> childTableData = queryChildTableData(dbStarter, child,
+                    whereClauseList);
+            //组织为两层结构的数据
+            buildDataStructure(child, parentTableData, parentRouteKeys, childTableData, childRouteKeys);
+
         }
-
-
-        return null;
     }
 
     private void buildDataStructure(SchemaSyncTable child, List<Map<String, Object>> parentTableData,

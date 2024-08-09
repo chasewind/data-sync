@@ -8,6 +8,7 @@ import org.example.common.reader.ReaderSegment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 @Slf4j
@@ -36,15 +37,15 @@ public class DataLoader {
         String traceId = RandomStringUtils.randomAlphabetic(12);
 
         CountDownLatch latch = new CountDownLatch(parentReaderSegments.size());
-        List<Future<String>> futureList = new ArrayList<>();
+        List<Future<List<Map<String, Object>>>> futureList = new ArrayList<>();
         for (ReaderSegment segment : parentReaderSegments) {
-            Future<String> future = threadPool.submit(new LoaderTask(dbStarter,latch, segment));
+            Future<List<Map<String, Object>>> future = threadPool.submit(new LoaderTask(dbStarter,latch, segment));
             futureList.add(future);
         }
         try {
             latch.await();
             log.info("------{}:summary info start------",traceId);
-            for(Future<String> future:futureList){
+            for(Future<List<Map<String, Object>>> future:futureList){
                 log.info("------{}:{}",traceId,future.get());
             }
             log.info("------{}:summary info end------",traceId);
