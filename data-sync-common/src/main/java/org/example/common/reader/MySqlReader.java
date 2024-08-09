@@ -1,20 +1,33 @@
 package org.example.common.reader;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.example.common.BaseDb;
+import org.example.common.DbStarter;
+import org.example.common.dao.JdbcInfoDao;
 import org.example.common.model.JdbcInfo;
 import org.example.common.model.MySqlColumnInfo;
 import org.example.common.model.SchemaSyncTable;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 public class MySqlReader {
+
+    public static    BaseDb getBaseDb(DbStarter dbStarter, SchemaSyncTable syncTable) throws SQLException {
+        JdbcInfoDao jdbcInfoTable = new JdbcInfoDao("",dbStarter.getDefaultDb());
+        List<JdbcInfo> jdbcList = jdbcInfoTable.queryAll();
+        if(CollectionUtils.isNotEmpty(jdbcList)) {
+            JdbcInfo firstJdbcInfo = jdbcList.stream().filter(e -> Objects.equals(e.getId(),
+                    syncTable.getDatasourceId())).findFirst().get();
+            dbStarter.init(firstJdbcInfo);
+            //利用数据库读取数据
+           return dbStarter.getBizDb(firstJdbcInfo.getJdbcName());
+        }
+        return null;
+    }
 
     public static List<ReaderSegment> readParentTableSegmentInfo(BaseDb baseDb, SchemaSyncTable parentTable) throws SQLException {
         List<ReaderSegment> segmentList = new ArrayList<>();

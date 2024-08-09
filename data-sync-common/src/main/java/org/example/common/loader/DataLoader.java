@@ -3,6 +3,7 @@ package org.example.common.loader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.example.common.BaseDb;
+import org.example.common.DbStarter;
 import org.example.common.reader.ReaderSegment;
 
 import java.util.ArrayList;
@@ -28,16 +29,16 @@ public class DataLoader {
     /**
      * 根据父级节点 分段加载整个索引方案对应的数据
      *
-     * @param baseDb               父节点对应数据库
+     * @param dbStarter               全局数据源
      * @param parentReaderSegments 父节点分段信息
      */
-    public static void loadAllDataByParentTableSegmentInfo(BaseDb baseDb, List<ReaderSegment> parentReaderSegments) {
+    public static void loadAllDataByParentTableSegmentInfo(DbStarter dbStarter, List<ReaderSegment> parentReaderSegments) {
         String traceId = RandomStringUtils.randomAlphabetic(12);
 
         CountDownLatch latch = new CountDownLatch(parentReaderSegments.size());
         List<Future<String>> futureList = new ArrayList<>();
         for (ReaderSegment segment : parentReaderSegments) {
-            Future<String> future = threadPool.submit(new LoaderTask(latch, segment));
+            Future<String> future = threadPool.submit(new LoaderTask(dbStarter,latch, segment));
             futureList.add(future);
         }
         try {
