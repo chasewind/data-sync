@@ -37,7 +37,7 @@ public class BaseDb extends DBDatabase {
         //
         this.config.setDriverClassName("com.mysql.cj.jdbc.Driver");
         this.config.setConnectionTimeout(TimeUnit.SECONDS.toMillis(30L));
-        this.config.setMaximumPoolSize(10);
+        this.config.setMaximumPoolSize(20);
         this.config.setMinimumIdle(5);
         this.config.setIdleTimeout(TimeUnit.MINUTES.toMillis(10L));
         this.config.setMaxLifetime(TimeUnit.MINUTES.toMillis(20L));

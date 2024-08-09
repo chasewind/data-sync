@@ -96,7 +96,8 @@ public class LoaderTask implements Callable<List<Map<String, Object>>> {
                 whereClause.setColumnValue(new ArrayList<>());
                 for (Map<String, Object> parentRow : parentTableData) {
                     Object parentValue = parentRow.get(parentKey);
-                    whereClause.getColumnValue().add(String.valueOf(parentValue));
+                    //这里手动加上单引号
+                    whereClause.getColumnValue().add("'"+String.valueOf(parentValue)+"'");
                 }
                 whereClauseList.add(whereClause);
             }

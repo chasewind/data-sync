@@ -113,20 +113,21 @@ public class MySqlReader {
 
         if(StringUtils.isEmpty(childTable.getTableSuffix())){
             //不分表
-            String sql = "select "+childTable.getPkField() + " from "+childTable.getTableName()+" "+whereCondition;
+            String sql = "select * from "+childTable.getTableName()+" "+whereCondition;
             querySqlMap.put(childTable.getTableName(),sql);
         }else{
             //分表
             String[]suffixArray =  StringUtils.split(childTable.getTableSuffix(),",");
             for(String suffix:suffixArray){
                 String sql =
-                        "select "+childTable.getPkField() + " from "+childTable.getTableName()+suffix+" "+whereCondition;
+                        "select * from "+childTable.getTableName()+suffix+" "+whereCondition;
                 querySqlMap.put(childTable.getTableName()+suffix,sql);
             }
         }
         for(Map.Entry<String,String> entry:querySqlMap.entrySet()){
-            log.info("table:{},sql:{}",entry.getKey(),entry.getValue());
+            //
             List<Map<String, Object>> list =bizDb.executeQuery(entry.getValue());
+            log.info("table:{},sql:{},data size: {}",entry.getKey(),entry.getValue(),list.size());
             if(CollectionUtils.isNotEmpty(list)){
                 childDataList.addAll(list);
             }

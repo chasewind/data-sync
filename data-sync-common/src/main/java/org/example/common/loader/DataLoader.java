@@ -1,5 +1,6 @@
 package org.example.common.loader;
 
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.example.common.BaseDb;
@@ -46,7 +47,9 @@ public class DataLoader {
             latch.await();
             log.info("------{}:summary info start------",traceId);
             for(Future<List<Map<String, Object>>> future:futureList){
-                log.info("------{}:{}",traceId,future.get());
+                List<Map<String, Object>> dataList = future.get();
+                log.info("------{}:{}",traceId,dataList.size());
+                log.info("data :{}",new Gson().toJson(dataList));
             }
             log.info("------{}:summary info end------",traceId);
         } catch (InterruptedException | ExecutionException e) {

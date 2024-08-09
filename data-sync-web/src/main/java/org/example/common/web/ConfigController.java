@@ -7,6 +7,7 @@ import org.example.common.BaseDb;
 import org.example.common.DbStarter;
 import org.example.common.dao.SchemeSyncTableDao;
 import org.example.common.dao.SearchSchemaDao;
+import org.example.common.loader.DataLoader;
 import org.example.common.model.MySqlColumnInfo;
 import org.example.common.model.SchemaSyncTable;
 import org.example.common.model.SearchSchema;
@@ -140,6 +141,35 @@ public class ConfigController {
                 readerSegment.setEndPkPos(30L);
                 readerSegment.setRealTableName("order_info_0");
                 return MySqlReader.readAndConvert(bizDb,readerSegment);
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    @RequestMapping(method = RequestMethod.GET,value = "/loadOneSegmentWholeData")
+    public  List<Map<String, Object>> loadOneSegmentWholeData(@RequestParam("schemaId") Integer schemaId) throws SQLException {
+        SchemeSyncTableDao schemeSyncTableDao = new SchemeSyncTableDao("",dbStarter.getDefaultDb());
+        List<SchemaSyncTable> syncTableList= schemeSyncTableDao.queryBySchemaId(schemaId);
+        List<SchemaSyncTable> parentTableList = syncTableList.stream().filter(e -> e.getParentId() == 0).collect(Collectors.toList());
+        if(CollectionUtils.isEmpty(parentTableList)){
+            return new ArrayList<>();
+        }
+        SchemaSyncTable parentTable = parentTableList.get(0);
+        JdbcInfoDao jdbcInfoTable = new JdbcInfoDao("",dbStarter.getDefaultDb());
+        List<JdbcInfo> jdbcList = jdbcInfoTable.queryAll();
+        if(CollectionUtils.isNotEmpty(jdbcList)){
+            JdbcInfo firstJdbcInfo= jdbcList.stream().filter(e-> Objects.equals(e.getId(),
+                    parentTable.getDatasourceId())).findFirst().get();
+            dbStarter.init(firstJdbcInfo);
+            //利用数据库读取数据
+            BaseDb bizDb = dbStarter.getBizDb(firstJdbcInfo.getJdbcName());
+            if(bizDb!=null){
+                ReaderSegment readerSegment = new ReaderSegment();
+                readerSegment.setSchemaSyncTable(parentTable);
+                readerSegment.setStartPkPos(1L);
+                readerSegment.setEndPkPos(20L);
+                readerSegment.setRealTableName("order_info_0");
+                DataLoader.loadAllDataByParentTableSegmentInfo(dbStarter, Collections.singletonList(readerSegment));
             }
         }
         return new ArrayList<>();
