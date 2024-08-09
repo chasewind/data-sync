@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.example.common.BaseDb;
 import org.example.common.DbStarter;
 import org.example.common.dao.JdbcInfoDao;
+import org.example.common.loader.WhereClause;
 import org.example.common.model.JdbcInfo;
 import org.example.common.model.MySqlColumnInfo;
 import org.example.common.model.SchemaSyncTable;
@@ -89,5 +90,47 @@ public class MySqlReader {
 
         return baseDb.executeQueryWithParam(sql,new Object[]{readerSegment.getStartPkPos(),readerSegment.getEndPkPos()});
 
+    }
+
+    public static List<Map<String, Object>> readAndConvertChildData(BaseDb bizDb,SchemaSyncTable childTable,
+                                                                    List<WhereClause> whereClauseList) throws SQLException {
+        List<Map<String, Object>>childDataList = new ArrayList<>();
+        Map<String,String> querySqlMap = new HashMap<>();
+        //遍历条件,拼接查询片段
+        StringBuilder whereQuery = new StringBuilder(" where ");
+        for(WhereClause whereClause:whereClauseList){
+            //加入波浪符号，避免因为关键字冲突导致语法错误
+            whereQuery.append(" `").append(whereClause.getColumnName()).append("` in (");
+            //拼接数据
+            whereQuery.append(StringUtils.join(whereClause.getColumnValue(),","));
+            whereQuery.append(") and");
+        }
+        // 删除最后一个 "and"
+        if (whereQuery.length() > 3) {
+            whereQuery.setLength(whereQuery.length() - 3);
+        }
+        String whereCondition = whereQuery.toString();
+
+        if(StringUtils.isEmpty(childTable.getTableSuffix())){
+            //不分表
+            String sql = "select "+childTable.getPkField() + " from "+childTable.getTableName()+" "+whereCondition;
+            querySqlMap.put(childTable.getTableName(),sql);
+        }else{
+            //分表
+            String[]suffixArray =  StringUtils.split(childTable.getTableSuffix(),",");
+            for(String suffix:suffixArray){
+                String sql =
+                        "select "+childTable.getPkField() + " from "+childTable.getTableName()+suffix+" "+whereCondition;
+                querySqlMap.put(childTable.getTableName()+suffix,sql);
+            }
+        }
+        for(Map.Entry<String,String> entry:querySqlMap.entrySet()){
+            log.info("table:{},sql:{}",entry.getKey(),entry.getValue());
+            List<Map<String, Object>> list =bizDb.executeQuery(entry.getValue());
+            if(CollectionUtils.isNotEmpty(list)){
+                childDataList.addAll(list);
+            }
+        }
+        return childDataList;
     }
 }
