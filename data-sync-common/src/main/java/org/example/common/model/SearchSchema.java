@@ -15,8 +15,8 @@ public class SearchSchema extends BaseModel {
     private String note;
     /**ES索引别名*/
     private String alias;
-    /**路由类型*/
-    private Integer routeType;
+    /**分表路由策略*/
+    private Integer shardRouteFlag;
 
 
 }

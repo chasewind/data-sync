@@ -42,7 +42,7 @@ public class SearchSchemaDao extends BaseDao {
     /**
      * 路由类型
      */
-    public final DBTableColumn ROUTE_TYPE;
+    public final DBTableColumn SHARD_ROUTE_FLAG;
 
 
     public SearchSchemaDao(String name, BaseDb db) {
@@ -52,10 +52,45 @@ public class SearchSchemaDao extends BaseDao {
         ALIAS = addColumn("s_alias", DataType.VARCHAR, 64, true);
         STATUS = addColumn("s_status", DataType.INTEGER, 0, true);
         NOTE = addColumn("note", DataType.VARCHAR, 200, false);
-        ROUTE_TYPE = addColumn("route_type", DataType.INTEGER, 0, false);
+        SHARD_ROUTE_FLAG = addColumn("shard_route_flag", DataType.INTEGER, 0, false);
         addIndex("SCHEMA_NAME_IDX", true, new DBColumn[]{S_NAME});
         addIndex("SCHEMA_CODE_IDX", true, new DBColumn[]{S_CODE});
         addIndex("SCHEMA_ALIAS_IDX", true, new DBColumn[]{ALIAS});
+    }
+
+    public SearchSchema queryById(int id)throws SQLException{
+        Connection connection = getConnection();
+        DBMSHandler dbms = getDBMSHandler();
+        DBContextStatic context = new DBContextStatic(dbms, connection, true);
+        db.open(context);
+        try (
+                DBReader reader = new DBReader(context)
+        ) {
+            DBCommand cmd = context.createCommand();
+            cmd.where(this.ID.is(id));
+            cmd.select(
+                    this.ID, this.S_NAME, this.S_CODE, this.ALIAS, this.STATUS, this.NOTE, this.SHARD_ROUTE_FLAG,
+                    this.CREATED_TIME,
+                    this.UPDATED_TIME);
+            reader.open(cmd);
+            //这里不用while，只读取一条
+            if (reader.moveNext()) {
+                SearchSchema data = new SearchSchema();
+                data.setId(reader.getInt(this.ID));
+                data.setName(reader.getString(this.S_NAME));
+                data.setCode(reader.getString(this.S_CODE));
+                data.setAlias(reader.getString(this.ALIAS));
+                data.setStatus(reader.getInt(this.STATUS));
+                data.setNote(reader.getString(this.NOTE));
+                data.setShardRouteFlag(reader.getInt(this.SHARD_ROUTE_FLAG));
+                data.setCreatedTime(reader.getLocalDateTime(this.CREATED_TIME));
+                data.setUpdatedTime(reader.getLocalDateTime(this.UPDATED_TIME));
+                return data;
+            }
+        } catch (Exception e) {
+            log.error("fail", e);
+        }
+        return null;
     }
 
     public List<SearchSchema> queryAll() throws SQLException {
@@ -69,7 +104,7 @@ public class SearchSchemaDao extends BaseDao {
         ) {
             DBCommand cmd = context.createCommand();
             cmd.select(
-                    this.ID, this.S_NAME, this.S_CODE, this.ALIAS, this.STATUS, this.NOTE, this.ROUTE_TYPE,
+                    this.ID, this.S_NAME, this.S_CODE, this.ALIAS, this.STATUS, this.NOTE, this.SHARD_ROUTE_FLAG,
                     this.CREATED_TIME,
                     this.UPDATED_TIME);
             reader.open(cmd);
@@ -82,7 +117,7 @@ public class SearchSchemaDao extends BaseDao {
                 data.setAlias(reader.getString(this.ALIAS));
                 data.setStatus(reader.getInt(this.STATUS));
                 data.setNote(reader.getString(this.NOTE));
-                data.setRouteType(reader.getInt(this.ROUTE_TYPE));
+                data.setShardRouteFlag(reader.getInt(this.SHARD_ROUTE_FLAG));
                 data.setCreatedTime(reader.getLocalDateTime(this.CREATED_TIME));
                 data.setUpdatedTime(reader.getLocalDateTime(this.UPDATED_TIME));
                 resultList.add(data);
