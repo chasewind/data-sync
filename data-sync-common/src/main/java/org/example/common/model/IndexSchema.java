@@ -1,8 +1,11 @@
 package org.example.common.model;
 
+import lombok.Data;
+
 /**
  * 索引方案
  */
+@Data
 public class IndexSchema extends BaseModel{
 
     /**方案名*/
