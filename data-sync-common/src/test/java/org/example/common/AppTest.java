@@ -3,6 +3,7 @@ package org.example.common;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.example.common.model.SchemaSyncTable;
+import org.example.common.shard.NormalModShard;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -14,6 +15,24 @@ import java.util.stream.Collectors;
  * Unit test for simple App.
  */
 public class AppTest{
+
+    @Test
+    public void testShard(){
+        //16个表截取[9,11]位置的三个数据，最大长度为2，小于10不补零，直接取模，不用hash处理
+        NormalModShard shard = new NormalModShard(16,2,9,11);
+
+        shard.setFillZero(false);
+        shard.setUseHash(false);
+        shard.setUseCut(true);
+        System.out.println(shard.getShardIndex("24030300947906337404"));
+        //1024个表，直接hash取模，小于10则补前置0
+        NormalModShard shard2= new NormalModShard(256,4,0,0);
+        shard2.setFillZero(true);
+        shard2.setUseHash(true);
+        shard2.setUseCut(false);
+        System.out.println(shard2.getShardIndex("24030300947906337404"));
+
+    }
 
     @Test
     public void testTree(){
