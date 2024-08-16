@@ -9,7 +9,7 @@ import org.example.common.dao.JdbcInfoDao;
 import org.example.common.loader.WhereClause;
 import org.example.common.model.JdbcInfo;
 import org.example.common.model.MySqlColumnInfo;
-import org.example.common.model.SchemaSyncTable;
+import org.example.common.model.SearchTable;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -17,7 +17,7 @@ import java.util.*;
 @Slf4j
 public class MySqlReader {
 
-    public static    BaseDb getBaseDb(DbStarter dbStarter, SchemaSyncTable syncTable) throws SQLException {
+    public static    BaseDb getBaseDb(DbStarter dbStarter, SearchTable syncTable) throws SQLException {
         JdbcInfoDao jdbcInfoTable = new JdbcInfoDao("",dbStarter.getDefaultDb());
         List<JdbcInfo> jdbcList = jdbcInfoTable.queryAll();
         if(CollectionUtils.isNotEmpty(jdbcList)) {
@@ -30,7 +30,7 @@ public class MySqlReader {
         return null;
     }
 
-    public static List<ReaderSegment> readParentTableSegmentInfo(BaseDb baseDb, SchemaSyncTable parentTable) throws SQLException {
+    public static List<ReaderSegment> readParentTableSegmentInfo(BaseDb baseDb, SearchTable parentTable) throws SQLException {
         List<ReaderSegment> segmentList = new ArrayList<>();
         Map<String,String> querySqlMap = new HashMap<>();
         if(StringUtils.isEmpty(parentTable.getTableSuffix())){
@@ -68,7 +68,7 @@ public class MySqlReader {
 
     }
     public static List<MySqlColumnInfo> readColumnMetaFromDb(JdbcInfo jdbcInfo, BaseDb baseDb,
-                                                             SchemaSyncTable syncTable) throws SQLException {
+                                                             SearchTable syncTable) throws SQLException {
         String dbName =jdbcInfo.getJdbcName();
         String tableName = "";
         if(StringUtils.isEmpty(syncTable.getTableSuffix())){
@@ -92,7 +92,7 @@ public class MySqlReader {
 
     }
 
-    public static List<Map<String, Object>> readAndConvertChildData(BaseDb bizDb,SchemaSyncTable childTable,
+    public static List<Map<String, Object>> readAndConvertChildData(BaseDb bizDb, SearchTable childTable,
                                                                     List<WhereClause> whereClauseList) throws SQLException {
         List<Map<String, Object>>childDataList = new ArrayList<>();
         Map<String,String> querySqlMap = new HashMap<>();

@@ -12,8 +12,7 @@ import org.apache.empire.db.context.DBContextStatic;
 import org.apache.empire.dbms.DBMSHandler;
 import org.example.common.BaseDb;
 import org.example.common.model.Pair;
-import org.example.common.model.SchemaSyncTable;
-import org.example.common.model.SearchSchema;
+import org.example.common.model.SearchTable;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,7 +25,7 @@ import java.util.stream.Collectors;
  * 一个schema对应的是一个主表加若干子表，构成一个完整的树形结构
  */
 @Slf4j
-public class SchemeSyncTableDao extends BaseDao {
+public class SearchTableDao extends BaseDao {
 
     /**
      * 方案ID
@@ -75,7 +74,7 @@ public class SchemeSyncTableDao extends BaseDao {
      * 和父表关系，1 父表，2 一对一，3 一对多
      */
     public final DBTableColumn TABLE_RELATION;
-    public SchemeSyncTableDao(String name, BaseDb db) {
+    public SearchTableDao(String name, BaseDb db) {
         super("schema_sync_table", db);
         SCHEME_ID = addColumn("scheme_id", DataType.INTEGER, 0, true);
         DATASOURCE_ID = addColumn("datasource_id", DataType.INTEGER, 0, true);
@@ -96,8 +95,8 @@ public class SchemeSyncTableDao extends BaseDao {
         addIndex("SCHEMA_SYNC_SCHEME_ID_IDX", true, new DBColumn[]{SCHEME_ID,PARENT_ID});
     }
 
-    public List<SchemaSyncTable> queryBySchemaId(Integer schemaId) throws SQLException {
-        List<SchemaSyncTable> resultList = new ArrayList<>();
+    public List<SearchTable> queryBySchemaId(Integer schemaId) throws SQLException {
+        List<SearchTable> resultList = new ArrayList<>();
         Connection connection = getConnection();
         DBMSHandler dbms = getDBMSHandler();
         DBContextStatic context = new DBContextStatic(dbms, connection, true);
@@ -117,7 +116,7 @@ public class SchemeSyncTableDao extends BaseDao {
             reader.open(cmd);
 
             while (reader.moveNext()) {
-                SchemaSyncTable data = new SchemaSyncTable();
+                SearchTable data = new SearchTable();
                 data.setId(reader.getInt(this.ID));
                 data.setSchemeId(reader.getInt(this.SCHEME_ID));
                 data.setDatasourceId(reader.getInt(this.DATASOURCE_ID));

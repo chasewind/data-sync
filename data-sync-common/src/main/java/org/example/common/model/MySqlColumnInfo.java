@@ -4,7 +4,7 @@ import lombok.Data;
 import org.example.common.SearchDataType;
 
 @Data
-public class MySqlColumnInfo extends BaseModel{
+public class MySqlColumnInfo {
     /**
      * 字段名；
      */

@@ -2,14 +2,13 @@ package org.example.common.web;
 
 import com.google.gson.Gson;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.example.common.BaseDb;
 import org.example.common.DbStarter;
-import org.example.common.dao.SchemeSyncTableDao;
+import org.example.common.dao.SearchTableDao;
 import org.example.common.dao.SearchSchemaDao;
 import org.example.common.loader.DataLoader;
 import org.example.common.model.MySqlColumnInfo;
-import org.example.common.model.SchemaSyncTable;
+import org.example.common.model.SearchTable;
 import org.example.common.model.SearchSchema;
 import org.example.common.dao.JdbcInfoDao;
 import org.example.common.model.JdbcInfo;
@@ -62,21 +61,21 @@ public class ConfigController {
     }
 
     @RequestMapping(method = RequestMethod.GET,value = "/loadOneSchema")
-    public  List<SchemaSyncTable> loadOneSchema(@RequestParam("schemaId") Integer schemaId) throws SQLException {
-        SchemeSyncTableDao schemeSyncTableDao = new SchemeSyncTableDao("",dbStarter.getDefaultDb());
+    public  List<SearchTable> loadOneSchema(@RequestParam("schemaId") Integer schemaId) throws SQLException {
+        SearchTableDao schemeSyncTableDao = new SearchTableDao("",dbStarter.getDefaultDb());
        return  schemeSyncTableDao.queryBySchemaId(schemaId);
     }
 
 
     @RequestMapping(method = RequestMethod.GET,value = "/loadSegmentInfo")
     public  List<ReaderSegment> loadSegmentInfo(@RequestParam("schemaId") Integer schemaId) throws SQLException {
-        SchemeSyncTableDao schemeSyncTableDao = new SchemeSyncTableDao("",dbStarter.getDefaultDb());
-        List<SchemaSyncTable> syncTableList= schemeSyncTableDao.queryBySchemaId(schemaId);
-        List<SchemaSyncTable> parentTableList = syncTableList.stream().filter(e -> e.getParentId() == 0).collect(Collectors.toList());
+        SearchTableDao schemeSyncTableDao = new SearchTableDao("",dbStarter.getDefaultDb());
+        List<SearchTable> syncTableList= schemeSyncTableDao.queryBySchemaId(schemaId);
+        List<SearchTable> parentTableList = syncTableList.stream().filter(e -> e.getParentId() == 0).collect(Collectors.toList());
         if(CollectionUtils.isEmpty(parentTableList)){
             return new ArrayList<>();
         }
-        SchemaSyncTable parentTable = parentTableList.get(0);
+        SearchTable parentTable = parentTableList.get(0);
         JdbcInfoDao jdbcInfoTable = new JdbcInfoDao("",dbStarter.getDefaultDb());
         List<JdbcInfo> jdbcList = jdbcInfoTable.queryAll();
         if(CollectionUtils.isNotEmpty(jdbcList)){
@@ -94,13 +93,13 @@ public class ConfigController {
 
     @RequestMapping(method = RequestMethod.GET,value = "/loadColumnMetaInfo")
     public  List<MySqlColumnInfo> loadColumnMetaInfo(@RequestParam("schemaId") Integer schemaId) throws SQLException {
-        SchemeSyncTableDao schemeSyncTableDao = new SchemeSyncTableDao("",dbStarter.getDefaultDb());
-        List<SchemaSyncTable> syncTableList= schemeSyncTableDao.queryBySchemaId(schemaId);
-        List<SchemaSyncTable> parentTableList = syncTableList.stream().filter(e -> e.getParentId() == 0).collect(Collectors.toList());
+        SearchTableDao schemeSyncTableDao = new SearchTableDao("",dbStarter.getDefaultDb());
+        List<SearchTable> syncTableList= schemeSyncTableDao.queryBySchemaId(schemaId);
+        List<SearchTable> parentTableList = syncTableList.stream().filter(e -> e.getParentId() == 0).collect(Collectors.toList());
         if(CollectionUtils.isEmpty(parentTableList)){
             return new ArrayList<>();
         }
-        SchemaSyncTable parentTable = parentTableList.get(0);
+        SearchTable parentTable = parentTableList.get(0);
         JdbcInfoDao jdbcInfoTable = new JdbcInfoDao("",dbStarter.getDefaultDb());
         List<JdbcInfo> jdbcList = jdbcInfoTable.queryAll();
         if(CollectionUtils.isNotEmpty(jdbcList)){
@@ -119,13 +118,13 @@ public class ConfigController {
 
     @RequestMapping(method = RequestMethod.GET,value = "/loadTableData")
     public  List<Map<String, Object>> loadTableData(@RequestParam("schemaId") Integer schemaId) throws SQLException {
-        SchemeSyncTableDao schemeSyncTableDao = new SchemeSyncTableDao("",dbStarter.getDefaultDb());
-        List<SchemaSyncTable> syncTableList= schemeSyncTableDao.queryBySchemaId(schemaId);
-        List<SchemaSyncTable> parentTableList = syncTableList.stream().filter(e -> e.getParentId() == 0).collect(Collectors.toList());
+        SearchTableDao schemeSyncTableDao = new SearchTableDao("",dbStarter.getDefaultDb());
+        List<SearchTable> syncTableList= schemeSyncTableDao.queryBySchemaId(schemaId);
+        List<SearchTable> parentTableList = syncTableList.stream().filter(e -> e.getParentId() == 0).collect(Collectors.toList());
         if(CollectionUtils.isEmpty(parentTableList)){
             return new ArrayList<>();
         }
-        SchemaSyncTable parentTable = parentTableList.get(0);
+        SearchTable parentTable = parentTableList.get(0);
         JdbcInfoDao jdbcInfoTable = new JdbcInfoDao("",dbStarter.getDefaultDb());
         List<JdbcInfo> jdbcList = jdbcInfoTable.queryAll();
         if(CollectionUtils.isNotEmpty(jdbcList)){
@@ -148,13 +147,13 @@ public class ConfigController {
 
     @RequestMapping(method = RequestMethod.GET,value = "/loadOneSegmentWholeData")
     public  List<Map<String, Object>> loadOneSegmentWholeData(@RequestParam("schemaId") Integer schemaId) throws SQLException {
-        SchemeSyncTableDao schemeSyncTableDao = new SchemeSyncTableDao("",dbStarter.getDefaultDb());
-        List<SchemaSyncTable> syncTableList= schemeSyncTableDao.queryBySchemaId(schemaId);
-        List<SchemaSyncTable> parentTableList = syncTableList.stream().filter(e -> e.getParentId() == 0).collect(Collectors.toList());
+        SearchTableDao schemeSyncTableDao = new SearchTableDao("",dbStarter.getDefaultDb());
+        List<SearchTable> syncTableList= schemeSyncTableDao.queryBySchemaId(schemaId);
+        List<SearchTable> parentTableList = syncTableList.stream().filter(e -> e.getParentId() == 0).collect(Collectors.toList());
         if(CollectionUtils.isEmpty(parentTableList)){
             return new ArrayList<>();
         }
-        SchemaSyncTable parentTable = parentTableList.get(0);
+        SearchTable parentTable = parentTableList.get(0);
         JdbcInfoDao jdbcInfoTable = new JdbcInfoDao("",dbStarter.getDefaultDb());
         List<JdbcInfo> jdbcList = jdbcInfoTable.queryAll();
         if(CollectionUtils.isNotEmpty(jdbcList)){

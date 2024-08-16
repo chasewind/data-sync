@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class SchemaSyncTable extends BaseModel {
+public class SearchTable extends BaseModel {
 
     /**方案ID ,主键关联*/
     private Integer schemeId;
@@ -46,6 +46,6 @@ public class SchemaSyncTable extends BaseModel {
 
 
     /**子节点*/
-    private List<SchemaSyncTable> children;
+    private List<SearchTable> children;
 
 }

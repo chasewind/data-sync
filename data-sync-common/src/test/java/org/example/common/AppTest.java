@@ -1,8 +1,7 @@
 package org.example.common;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.example.common.model.SchemaSyncTable;
+import org.example.common.model.SearchTable;
 import org.example.common.shard.NormalModShard;
 import org.junit.Test;
 
@@ -36,38 +35,38 @@ public class AppTest{
 
     @Test
     public void testTree(){
-        SchemaSyncTable t1 = new SchemaSyncTable();
+        SearchTable t1 = new SearchTable();
         t1.setParentId(0);
         t1.setId(1);
 
-        SchemaSyncTable t2 = new SchemaSyncTable();
+        SearchTable t2 = new SearchTable();
         t2.setParentId(0);
         t2.setId(2);
 
 
-        SchemaSyncTable t3 = new SchemaSyncTable();
+        SearchTable t3 = new SearchTable();
         t3.setParentId(1);
         t3.setId(3);
 
-        SchemaSyncTable t4 = new SchemaSyncTable();
+        SearchTable t4 = new SearchTable();
         t4.setParentId(1);
         t4.setId(4);
 
 
-        SchemaSyncTable t5 = new SchemaSyncTable();
+        SearchTable t5 = new SearchTable();
         t5.setParentId(2);
         t5.setId(5);
 
 
-        SchemaSyncTable t6 = new SchemaSyncTable();
+        SearchTable t6 = new SearchTable();
         t6.setParentId(2);
         t6.setId(6);
 
 
-        SchemaSyncTable t7 = new SchemaSyncTable();
+        SearchTable t7 = new SearchTable();
         t7.setParentId(6);
         t7.setId(7);
-        List<SchemaSyncTable>resultList= new ArrayList<>();
+        List<SearchTable>resultList= new ArrayList<>();
         resultList.add(t1);
         resultList.add(t2);
         resultList.add(t3);
@@ -75,7 +74,7 @@ public class AppTest{
         resultList.add(t5);
         resultList.add(t6);
         resultList.add(t7);
-        List<SchemaSyncTable> treeNodeList = resultList.stream()
+        List<SearchTable> treeNodeList = resultList.stream()
                 .filter(item -> {
                     item.setChildren(
                             resultList.stream()

@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.example.common.BaseDb;
 import org.example.common.DbStarter;
 import org.example.common.model.Pair;
-import org.example.common.model.SchemaSyncTable;
+import org.example.common.model.SearchTable;
 import org.example.common.reader.MySqlReader;
 import org.example.common.reader.ReaderSegment;
 
@@ -30,7 +30,7 @@ public class LoaderTask implements Callable<List<Map<String, Object>>> {
         this.dbStarter = dbStarter;
     }
 
-    public static List<Map<String, Object>> queryChildTableData(DbStarter dbStarter, SchemaSyncTable childTable,
+    public static List<Map<String, Object>> queryChildTableData(DbStarter dbStarter, SearchTable childTable,
                                                                 List<WhereClause> whereClauseList) throws SQLException {
         List<Map<String, Object>> childTableData = new ArrayList<>();
         BaseDb bizDb = MySqlReader.getBaseDb(dbStarter, childTable);
@@ -45,7 +45,7 @@ public class LoaderTask implements Callable<List<Map<String, Object>>> {
     @Override
     public List<Map<String, Object>> call() throws Exception {
         try {
-            SchemaSyncTable schemaSyncTable = parentSegment.getSchemaSyncTable();
+            SearchTable schemaSyncTable = parentSegment.getSchemaSyncTable();
             BaseDb bizDb = MySqlReader.getBaseDb(dbStarter, schemaSyncTable);
             if (bizDb == null) {
                 latch.countDown();
@@ -60,7 +60,7 @@ public class LoaderTask implements Callable<List<Map<String, Object>>> {
             }
             //加载子节点对应数据
             //目前只接受一层子节点
-            List<SchemaSyncTable> children = schemaSyncTable.getChildren();
+            List<SearchTable> children = schemaSyncTable.getChildren();
             loadChildrenData(children, parentTableData);
             latch.countDown();
             return parentTableData;
@@ -71,7 +71,7 @@ public class LoaderTask implements Callable<List<Map<String, Object>>> {
         }
     }
 
-    private void loadChildrenData(List<SchemaSyncTable> children, List<Map<String, Object>> parentTableData) throws SQLException {
+    private void loadChildrenData(List<SearchTable> children, List<Map<String, Object>> parentTableData) throws SQLException {
         if (CollectionUtils.isEmpty(children)) {
             return;
         }
@@ -80,7 +80,7 @@ public class LoaderTask implements Callable<List<Map<String, Object>>> {
         //比如订单主表是id，子表为记为p_id,子表查询拼接sql 就是where p_id in (id1,id2,id3)
         //如果是多个对应关系的话，主表 c1,c2，子表是 cx1和cx2，sql拼接就是 where cx1 in (....) and cx2 in (....)
         //这里确保外层循环次数最少，所以先用表关系做外循环
-        for (SchemaSyncTable child : children) {
+        for (SearchTable child : children) {
             List<Pair<String, String>> columnRelation = child.getColumnRelation();
             List<WhereClause> whereClauseList = new ArrayList<>();
             List<String> childRouteKeys = new ArrayList<>();
@@ -110,7 +110,7 @@ public class LoaderTask implements Callable<List<Map<String, Object>>> {
         }
     }
 
-    private void buildDataStructure(SchemaSyncTable child, List<Map<String, Object>> parentTableData,
+    private void buildDataStructure(SearchTable child, List<Map<String, Object>> parentTableData,
                                     List<String> parentRouteKeys, List<Map<String, Object>> childTableData,
                                     List<String> childRouteKeys) {
         //拼接数据,需要先记录唯一key然后父子关联

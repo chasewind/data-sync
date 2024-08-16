@@ -1,7 +1,7 @@
 package org.example.common.reader;
 
 import lombok.Data;
-import org.example.common.model.SchemaSyncTable;
+import org.example.common.model.SearchTable;
 
 import java.io.Serializable;
 
@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Data
 public class ReaderSegment implements Serializable {
     /**需要同步的表，原始数据*/
-    private SchemaSyncTable schemaSyncTable;
+    private SearchTable schemaSyncTable;
     /**如果做了分表，这里要拼接表名*/
     private String realTableName;
     /**分页起始位置id*/
